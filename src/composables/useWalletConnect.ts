@@ -1,21 +1,11 @@
 import { ref } from 'vue';
 import WalletConnect from '@walletconnect/client';
 import { Interface } from '@ethersproject/abi';
-import { getJSON } from '@snapshot-labs/snapshot.js/src/utils';
 import { formatUnits } from '@ethersproject/units';
+import { getABI } from '@/helpers/etherscan';
+import { createContractCallTransaction } from '@/helpers/transactions';
 
 let connector;
-
-async function getContractABI(address) {
-  const uri = 'https://api.etherscan.io/api';
-  const params = new URLSearchParams({
-    module: 'contract',
-    action: 'getAbi',
-    address
-  });
-  const { result } = await getJSON(`${uri}?${params}`);
-  return JSON.parse(result);
-}
 
 function parseTransaction(call, abi) {
   const iface = new Interface(abi);
@@ -27,23 +17,33 @@ async function parseCall(call) {
   if (call.method === 'eth_sendTransaction') {
     console.log('Send transaction');
     const params = call.params[0];
-    const abi = await getContractABI(params.to);
+    const abi = await getABI(params.to);
     console.log('Got ABI contract');
     const tx = parseTransaction(params, abi);
-    console.log('Tx', tx);
-    return [
-      {
+    return createContractCallTransaction({
+      form: {
         to: params.to,
-        value: formatUnits(params.value || 0),
+        abi,
+        recipient: params.to,
         method: tx.signature,
-        params: tx.args,
-        operation: 0,
-        _data: {
-          call,
-          tx
-        }
+        args: tx.args,
+        amount: formatUnits(params.value || 0)
       }
-    ];
+    });
+    //     console.log('Tx', tx);
+    //     return [
+    //       {
+    //         to: params.to,
+    //         value: formatUnits(params.value || 0),
+    //         method: tx.signature,
+    //         params: tx.args,
+    //         operation: 0,
+    //         _data: {
+    //           call,
+    //           tx
+    //         }
+    //       }
+    //     ];
   }
   return false;
 }

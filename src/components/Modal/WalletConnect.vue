@@ -77,6 +77,7 @@ async function handleLogout() {
 }
 
 watch(requests, requests => {
+  console.log({ requests });
   requests?.forEach((request: any) => emit('add', request));
 });
 </script>
