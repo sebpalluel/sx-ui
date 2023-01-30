@@ -55,6 +55,7 @@ export function useWalletConnect(address: string, network = 1) {
 
   async function logout() {
     await connector.killSession();
+    logged.value = false;
   }
 
   async function connect(uri) {
