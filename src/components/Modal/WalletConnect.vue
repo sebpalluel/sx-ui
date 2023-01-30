@@ -75,4 +75,8 @@ async function handleLogout() {
   await logout();
   wcURI.value = '';
 }
+
+watch(requests, requests => {
+  requests?.forEach((request: any) => emit('add', request));
+});
 </script>
