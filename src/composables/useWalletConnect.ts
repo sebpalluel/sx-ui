@@ -1,8 +1,6 @@
 import { ref } from 'vue';
 import WalletConnect from '@walletconnect/client';
-import { isAddress } from '@ethersproject/address';
 import { Interface } from '@ethersproject/abi';
-import getProvider from '@snapshot-labs/snapshot.js/src/utils/provider';
 import { getJSON } from '@snapshot-labs/snapshot.js/src/utils';
 import { formatUnits } from '@ethersproject/units';
 
@@ -50,9 +48,8 @@ async function parseCall(call) {
   return false;
 }
 
-export function useWalletConnect() {
+export function useWalletConnect(address: string, network = 1) {
   const requests = ref([]);
-  const address = ref('');
   const logged = ref(false);
   const loading = ref(false);
 
@@ -60,18 +57,8 @@ export function useWalletConnect() {
     await connector.killSession();
   }
 
-  async function connect(account, uri) {
-    address.value = account;
+  async function connect(uri) {
     loading.value = true;
-    if (!isAddress(account)) {
-      const provider = getProvider('1');
-      address.value = await provider.resolveName(account);
-    }
-    if (!address.value) {
-      loading.value = false;
-      return;
-    }
-
     connector = new WalletConnect({
       uri,
       storageId: Math.random().toString()
@@ -81,8 +68,8 @@ export function useWalletConnect() {
       console.log('session_request', error, payload);
       if (error) throw error;
       await connector.approveSession({
-        accounts: [address.value],
-        chainId: 1
+        accounts: [address],
+        chainId: network
       });
       console.log('Connected');
       logged.value = true;
@@ -113,7 +100,6 @@ export function useWalletConnect() {
     parseCall,
     connect,
     logout,
-    address,
     loading,
     logged,
     requests
