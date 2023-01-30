@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, watch, Ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useWalletConnect } from '@/composables/useWalletConnect';
 import { shorten, explorerUrl, getUrl } from '@/helpers/utils';
 
@@ -53,7 +53,7 @@ const emit = defineEmits(['close', 'add']);
 
 const wcURI = ref('');
 const error = ref('');
-const { connect, logout, loading, logged, requests, parseCall } = useWalletConnect(
+const { connect, logout, loading, logged, requests } = useWalletConnect(
   props.address as string,
   props.network
 );
@@ -61,7 +61,6 @@ const { connect, logout, loading, logged, requests, parseCall } = useWalletConne
 async function handleLogin() {
   try {
     await connect(wcURI.value);
-    //   emit('add', requests);
     error.value = '';
     emit('close');
   } catch (e: any) {
@@ -76,8 +75,5 @@ async function handleLogout() {
   wcURI.value = '';
 }
 
-watch(requests, requests => {
-  console.log({ requests });
-  requests?.forEach((request: any) => emit('add', request));
-});
+watch(requests, requests => requests?.forEach((request: any) => emit('add', request)));
 </script>

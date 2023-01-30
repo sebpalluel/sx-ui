@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import WalletConnect from '@walletconnect/client';
 import { Interface } from '@ethersproject/abi';
 import { formatUnits } from '@ethersproject/units';
@@ -30,26 +30,12 @@ async function parseCall(call) {
         amount: formatUnits(params.value || 0)
       }
     });
-    //     console.log('Tx', tx);
-    //     return [
-    //       {
-    //         to: params.to,
-    //         value: formatUnits(params.value || 0),
-    //         method: tx.signature,
-    //         params: tx.args,
-    //         operation: 0,
-    //         _data: {
-    //           call,
-    //           tx
-    //         }
-    //       }
-    //     ];
   }
   return false;
 }
 
 export function useWalletConnect(address: string, network = 1) {
-  const requests = ref([]);
+  const requests = reactive<any[]>([]);
   const logged = ref(false);
   const loading = ref(false);
 
@@ -85,7 +71,9 @@ export function useWalletConnect(address: string, network = 1) {
         const request: any = await parseCall(payload);
         console.log('Request', request);
         // @ts-ignore
-        if (request) requests.value.push(request);
+        if (request) {
+          requests.push(request);
+        }
       } catch (e) {
         console.log(e);
       }
